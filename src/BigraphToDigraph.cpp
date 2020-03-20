@@ -2,6 +2,7 @@
 #include <sstream>
 #include <cassert>
 #include <unordered_map>
+#include <iostream>
 #include "CommonUtils.h"
 #include "vg.pb.h"
 #include "fastqloader.h"
@@ -245,8 +246,48 @@ AlignmentGraph DirectedGraph::BuildFromGFA(const GfaGraph& graph, bool tryDAG)
 		breakpointsBw.push_back(node.second.size());
 		std::sort(breakpointsFw.begin(), breakpointsFw.end());
 		std::sort(breakpointsBw.begin(), breakpointsBw.end());
-		result.AddNode(nodes.first.nodeId, nodes.first.sequence, nodes.first.name, !nodes.first.rightEnd, breakpointsFw);
-		result.AddNode(nodes.second.nodeId, nodes.second.sequence, nodes.second.name, !nodes.second.rightEnd, breakpointsBw);
+
+		try {
+            result.AddNode(nodes.first.nodeId, nodes.first.sequence, nodes.first.name, !nodes.first.rightEnd,
+                           breakpointsFw);
+        }
+		catch (...){
+            std::cerr
+                << "First node" << '\n'
+                << "nodeId:\t" << nodes.first.nodeId << '\n'
+                << "original nodeId:\t" << nodes.first.originalNodeId << '\n'
+                << "name:\t" << nodes.first.name << '\n'
+                << "breakpointsFw.back:\t" << breakpointsFw.back() << '\n'
+                << "sequence.size:\t" << nodes.first.sequence.size() << "\n\n"
+                << "Second node" << '\n'
+                << "nodeId:\t" << nodes.second.nodeId << '\n'
+                << "original nodeId:\t" << nodes.second.originalNodeId << '\n'
+                << "name:\t" << nodes.second.name << '\n'
+                << "breakpointsBw.back:\t" << breakpointsBw.back() << '\n'
+                << "sequence.size:\t" << nodes.second.sequence.size() << '\n';
+		    throw std::runtime_error("Adding FIRST node failed\n");
+		};
+		try {
+            result.AddNode(nodes.second.nodeId, nodes.second.sequence, nodes.second.name, !nodes.second.rightEnd,
+                           breakpointsBw);
+        }
+		catch (...){
+            std::cerr
+                << "First node" << '\n'
+                << "nodeId:\t" << nodes.first.nodeId << '\n'
+                << "original nodeId:\t" << nodes.first.originalNodeId << '\n'
+                << "name:\t" << nodes.first.name << '\n'
+                << "breakpointsFw.back:\t" << breakpointsFw.back() << '\n'
+                << "sequence.size:\t" << nodes.first.sequence.size() << "\n\n"
+                << "Second node" << '\n'
+                << "nodeId:\t" << nodes.second.nodeId << '\n'
+                << "original nodeId:\t" << nodes.second.originalNodeId << '\n'
+                << "name:\t" << nodes.second.name << '\n'
+                << "breakpointsBw.back:\t" << breakpointsBw.back() << '\n'
+                << "sequence.size:\t" << nodes.second.sequence.size() << '\n';
+            throw std::runtime_error("Adding SECOND node failed\n");
+		}
+
 	}
 	for (auto edge : graph.edges)
 	{
